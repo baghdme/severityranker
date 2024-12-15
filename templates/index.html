@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Medical Data Processor</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-Fo3rlrZj/k7ujTnHq6kODNLRJd5EAG7+eOCkWeCZCvDytlzlQ5hbdX6eVQp5PFyscfM7iGj1cJX+NQv9zbgHMA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* General Body Styling */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #e7f3fe; /* Light blue background */
+            color: #e7f3fe;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        /* Header Title */
+        h1.header-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #005dab; /* Darker blue for the title */
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        /* Card Styling */
+        .card {
+            border-radius: 12px;
+            background: #005dab; /* Darker blue for boxes */
+            color: #ffffff; /* White text for contrast */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); /* Soft shadow for depth */
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: #004494; /* Even darker blue for headers */
+            color: #ffffff;
+            font-size: 1.1rem;
+            font-weight: 600;
+            padding: 15px 20px;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        /* Buttons */
+        .btn-custom {
+            background: #ffffff; /* White button for contrast */
+            color: #005dab; /* Blue text for buttons */
+            border: 1px solid #ffffff;
+            padding: 10px 16px;
+            font-size: 0.9rem;
+            border-radius: 25px;
+            transition: background-color 0.3s, color 0.3s, box-shadow 0.2s;
+        }
+
+        .btn-custom:hover {
+            background: #e7f3fe; /* Light blue on hover */
+            color: #005dab; /* Keep text blue */
+            box-shadow: 0 4px 15px rgba(0, 120, 212, 0.2);
+        }
+
+        /* Table Styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #ffffff; /* White table background */
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eaeaea;
+        }
+
+        th {
+            background: #004494; /* Darker blue header */
+            color: #ffffff; /* White text */
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background: #f1f7fc; /* Subtle light blue hover effect */
+        }
+
+        /* Alerts */
+        .alert-info {
+            background-color: #e7f3fe;
+            color: #005dab;
+            border-left: 4px solid #004494;
+            padding: 10px 15px;
+            border-radius: 8px;
+        }
+
+        /* Badge for medications */
+        .badge-med {
+            background-color: #17a2b8;
+            color: #fff;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            padding: 8px 14px;
+            border-radius: 20px;
+            display: inline-block;
+            font-weight: 500;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        /* Responsive Grid */
+        @media (max-width: 768px) {
+            .row {
+                flex-direction: column;
+            }
+        }
+        .logout-button {
+            position: fixed;
+            right: 20px;
+            top: 20px;
+            z-index: 1000; /* Ensure it's above other content */
+        }
+    </style>
+</head>
+<body>
+    <!-- Button to navigate to single patient assessment -->
+    <div class="card-footer">
+        <a href="{{ url_for('assess_patient') }}" class="btn btn-primary">Go to Single Patient Assessment</a>
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <h1 class="text-center mb-5 header-title"><i class="fas fa-procedures"></i> Medical Data Processor</h1>
+         <!-- Logout Button -->
+        <a href="{{ url_for('logout') }}" class="btn btn-danger logout-button">Logout</a>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+              {% for message in messages %}
+                <p class="mb-0">{{ message }}</p>
+              {% endfor %}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endif %}
+        {% endwith %}
+        
+        <!-- Landscape Layout -->
+        <div class="row g-4">
+            <!-- Left Column -->
+            <div class="col-lg-8">
+                <!-- File Upload Section -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-upload me-2"></i> Upload CSV Files
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Patient Data Upload -->
+                            <div class="col-md-6">
+                                <h5><i class="fas fa-file-upload"></i> Patient Data</h5>
+                                <form method="POST" action="{{ url_for('process_files') }}" enctype="multipart/form-data">
+                                    <div class="mb-3">
+                                        <label for="patient_file" class="form-label">Upload Patient CSV Files</label>
+                                        <input type="file" class="form-control" id="patient_file" name="files[]" multiple accept=".csv" required>
+                                        <small class="form-text text-muted">Ensure each CSV contains a unique 'ID' column.</small>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary btn-custom"><i class="fas fa-upload me-2"></i> Process</button>
+                                </form>
+                            </div>
+                            
+                            <!-- Medications Inventory Upload -->
+                            <div class="col-md-6">
+                                <h5><i class="fas fa-capsules"></i> Medications Inventory</h5>
+                                <form method="POST" action="{{ url_for('upload_medications') }}" enctype="multipart/form-data">
+                                    <div class="mb-3">
+                                        <label for="meds_file" class="form-label">Upload Medications CSV</label>
+                                        <input type="file" class="form-control" id="meds_file" name="meds_file" accept=".csv" required>
+                                        <small class="form-text text-muted">CSV must contain 'Medication Name' and 'Quantity'.</small>
+                                    </div>
+                                    <button type="submit" class="btn btn-secondary btn-custom"><i class="fas fa-upload me-2"></i> Upload</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Processed Data Section -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <i class="fas fa-file-download me-2"></i> Processed Data
+                    </div>
+                    <div class="card-body">
+                        {% if session.get('processed_file') %}
+                            <a href="{{ url_for('download_processed_file') }}" class="btn btn-secondary btn-custom"><i class="fas fa-download me-2"></i> Download Processed Patient Data</a>
+                        {% else %}
+                            <p class="text-muted">No processed data available. Please upload files to process.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Column -->
+            <div class="col-lg-4">
+                <!-- Medications Inventory Horizontal List -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-boxes me-2"></i> Medications Inventory
+                    </div>
+                    <div class="card-body">
+                        {% if medications %}
+                            <div class="d-flex flex-row flex-nowrap overflow-auto mb-3">
+                                {% for med, qty in medications.items() %}
+                                    <span class="badge-med">{{ med }}: {{ qty }}</span>
+                                {% endfor %}
+                            </div>
+                            <a href="{{ url_for('download_meds_file') }}" class="btn btn-info btn-custom"><i class="fas fa-download me-2"></i> Download Inventory</a>
+                        {% else %}
+                            <p class="text-muted">No inventory data available.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Allocation Actions -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <i class="fas fa-user-md me-2"></i> Medication Allocation
+                    </div>
+                    <div class="card-body">
+                        {% if session.get('processed_file') and session.get('medications_inventory') %}
+                            <form method="POST" action="{{ url_for('allocate_all_medications') }}" class="d-block mb-3">
+                                <button type="submit" class="btn btn-success btn-custom w-100"><i class="fas fa-th-large me-2"></i> Allocate All</button>
+                            </form>
+                            <form method="POST" action="{{ url_for('allocate_next_medication') }}" class="d-block">
+                                <button type="submit" class="btn btn-warning btn-custom w-100"><i class="fas fa-user-plus me-2"></i> Allocate Next Patient</button>
+                            </form>
+                        {% else %}
+                            <p class="text-muted">Ensure both patient data and inventory are uploaded.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Allocation Details Table -->
+        {% if allocations %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <i class="fas fa-list-alt me-2"></i> Allocation Details
+            </div>
+            <div class="card-body">
+                <div class="table-responsive mb-3">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Severity Label</th>
+                                <th>Allocation Decision</th>
+                                <th>Medications Allocated</th>
+                                <th>Reasoning</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for alloc in allocations %}
+                                <tr>
+                                    <td>{{ alloc['ID'] }}</td>
+                                    <td>{{ alloc['Severity_Label'] }}</td>
+                                    <td>
+                                        {% if alloc['Allocation Decision'] == 'Yes' %}
+                                            <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i> Yes</span>
+                                        {% else %}
+                                            <span class="badge bg-danger"><i class="fas fa-times-circle me-1"></i> No</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if alloc['Medications Allocated'] and ':' in alloc['Medications Allocated'] | string %}
+                                            {% set meds = alloc['Medications Allocated'] | string %}
+                                            {% set meds_list = meds.split(',') %}
+                                            {% for med in meds_list %}
+                                                <span class="badge-med">{{ med.strip() }}</span>
+                                            {% endfor %}
+                                        {% else %}
+                                            <span class="text-muted">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ alloc['Reasoning'] }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <a href="{{ url_for('download_file') }}" class="btn btn-info btn-custom"><i class="fas fa-download me-2"></i> Download Allocation Results</a>
+            </div>
+        </div>
+        {% endif %}
+        
+    </div>
+    
+    <!-- Bootstrap 5 JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Optional: Add custom JS here -->
+</body>
+</html>
