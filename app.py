@@ -23,7 +23,7 @@ os.makedirs(app.config['PROCESSED_FOLDER'], exist_ok=True)
 
 # Initialize OpenAI client
 openai.api_key='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'
-
+# Needs to be saved in a .env but this is just for project testing purposes (API key is disabled)
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
